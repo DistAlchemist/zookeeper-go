@@ -1,2 +1,2 @@
-module github.com/cvbhjkl/zookeeper-go
+module zookeepergo
 go 1.15
