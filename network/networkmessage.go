@@ -11,5 +11,5 @@ var MeassageChannel chan NetMessage
 
 func ListentoMessage(c net.Conn) {
 
-	c.Read()
+	//c.Read()
 }

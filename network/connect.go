@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"time"
 )
 
 //ConnectToServer build a connection to a server
-func ConnectToServer(s Servername) {
-	tcpaddr, err := net.ResolveTCPAddr("tcp", s.addr+":"+strconv.Itoa(s.port))
-	tcpconn, err := net.DialTCP("tcp", nil, tcpaddr)
-	fmt.Println("send TCP request to " + s.addr + ":" + strconv.Itoa(s.port))
+func ConnectToServer(s Peer) net.Conn {
+	tcpaddr, err := net.ResolveTCPAddr("tcp", s.Addr+":"+strconv.Itoa(s.Port))
+	tcpconn, err := net.DialTimeout("tcp", s.Addr+":"+strconv.Itoa(s.Port), 2*time.Second)
+	fmt.Println("send TCP request to " + s.Addr + ":" + strconv.Itoa(s.Port))
 	if err != nil {
-		fmt.Println("send TCP request failed, listen to " + s.addr + ":" + strconv.Itoa(s.port))
+		fmt.Println("send TCP request failed, listen to " + s.Addr + ":" + strconv.Itoa(s.Port))
 		tcplisten, err := net.ListenTCP("tcp", tcpaddr)
 		if err != nil {
 			fmt.Println("listen error")
@@ -21,10 +22,11 @@ func ConnectToServer(s Servername) {
 		if err != nil {
 			fmt.Println("accept error")
 		}
-		go ListentoMessage(tcpconn1)
+		fmt.Println("connect to " + s.Addr + ":" + strconv.Itoa(s.Port))
+		return tcpconn1
 	} else {
-		go ListentoMessage(tcpconn)
+		fmt.Println("connect to " + s.Addr + ":" + strconv.Itoa(s.Port))
+		return tcpconn
 	}
-	fmt.Println("connect to " + s.addr + ":" + strconv.Itoa(s.port))
-
+	return tcpconn
 }

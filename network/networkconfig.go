@@ -1,6 +1,8 @@
 package network
 
-type Servername struct {
-	addr string
-	port int
+//Peer save peer information
+type Peer struct {
+	Sid  int
+	Addr string
+	Port int
 }
