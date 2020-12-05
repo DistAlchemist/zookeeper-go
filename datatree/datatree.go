@@ -3,6 +3,7 @@ package datatree
 import (
 	"fmt"
 	"strings"
+	"zookeepergo/network"
 )
 
 //Datatree a structure for manage data
@@ -75,7 +76,7 @@ func DeleteZnode(dir string, root *Datatree) {
 
 //LookZnode shows all child of a direcory
 func LookZnode(dir string, root *Datatree) {
-	/*dirq := SplitDir(dir)
+	dirq := SplitDir(dir)
 	now := root
 	for i := 0; i < len(dirq); i++ {
 		next, exist := (*now).child[dirq[i]]
@@ -86,8 +87,10 @@ func LookZnode(dir string, root *Datatree) {
 			return
 		}
 	}
-	(*now).father = nil
-	now = nil*/
+	for v := range now.child {
+		fmt.Printf(v)
+	}
+	fmt.Printf("\n")
 }
 
 //CreateWatcher create a new znode on datatree
@@ -104,4 +107,14 @@ func CreateWatcher(dir string, root *Datatree, clientid int) {
 		}
 	}
 	(*now).watcher = clientid
+}
+
+//DealWithMessage deal with message about create or delete
+func DealWithMessage(Message network.NetMessage, root *Datatree) {
+	if Message.Type == 5 {
+		CreateZnode(Message.Str, root)
+	}
+	if Message.Type == 6 {
+		DeleteZnode(Message.Str, root)
+	}
 }

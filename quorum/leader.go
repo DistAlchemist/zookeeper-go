@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"zookeepergo/datatree"
 	"zookeepergo/network"
 )
 
@@ -31,7 +32,8 @@ func Leader(Conn []*net.Conn) {
 	connecttoclient(clientset, cP)
 
 	//load znode
-
+	root := datatree.NewZnode()
+	fmt.Println("load a new node")
 	//sync with follower
 
 	//deal with message by select
@@ -40,10 +42,16 @@ func Leader(Conn []*net.Conn) {
 		select {
 		case Message := <-cP:
 			if Message.Type >= 5 {
+				datatree.DealWithMessage(Message, root)
+				fmt.Printf("deal with message %d-%s\n", Message.Type, Message.Str)
 				for i := 0; i < len(Conn); i++ {
 					network.SendDataMessage(Conn[i], Message.Id, Message.Type, Message.Info, Message.Str)
 					time.Sleep(50 * time.Millisecond)
 				}
+			}
+			if Message.Type == 7 {
+				datatree.LookZnode(Message.Str, root)
+				fmt.Printf("deal with message %d-%s\n", Message.Type, Message.Str)
 			}
 
 		}

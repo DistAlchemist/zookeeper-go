@@ -81,11 +81,10 @@ func ResponseHandler(c *net.Conn, ch chan NetMessage, num int) {
 			MessageProcessed.Info = num
 			ch <- MessageProcessed
 			return
-		} else {
-			MessageProcessed := MessageDealer(readinfo[:n])
-			MessageProcessed.Id = num
-			ch <- MessageProcessed
 		}
+		MessageProcessed := MessageDealer(readinfo[:n])
+		MessageProcessed.Id = num
+		ch <- MessageProcessed
 	}
 
 	//c.Read()

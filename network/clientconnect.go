@@ -15,6 +15,7 @@ type Client struct {
 	Portresponse int
 }
 
+//ConnectToClientrRes leader listen to client request
 func ConnectToClientrRes(s Client, c1 chan *net.Conn) {
 	tcpaddr, err := net.ResolveTCPAddr("tcp", s.Addr+":"+strconv.Itoa(s.Portresponse))
 	tcpconn, err := net.DialTimeout("tcp", s.Addr+":"+strconv.Itoa(s.Portresponse), 2*time.Second)
