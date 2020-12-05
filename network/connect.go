@@ -8,7 +8,7 @@ import (
 )
 
 //ConnectToServer build a connection to a server
-func ConnectToServer(s Peer) net.Conn {
+func ConnectToServer(s Peer, c chan *net.Conn) {
 	tcpaddr, err := net.ResolveTCPAddr("tcp", s.Addr+":"+strconv.Itoa(s.Port))
 	tcpconn, err := net.DialTimeout("tcp", s.Addr+":"+strconv.Itoa(s.Port), 2*time.Second)
 	fmt.Println("send TCP request to " + s.Addr + ":" + strconv.Itoa(s.Port))
@@ -23,10 +23,43 @@ func ConnectToServer(s Peer) net.Conn {
 			fmt.Println("accept error")
 		}
 		fmt.Println("connect to " + s.Addr + ":" + strconv.Itoa(s.Port))
-		return tcpconn1
+		readinfo := make([]byte, 10)
+		tcpconn1.Read(readinfo)
+		fmt.Println("reveived:" + string(readinfo) + " from " + s.Addr + ":" + strconv.Itoa(s.Port))
+		c <- &tcpconn1
 	} else {
 		fmt.Println("connect to " + s.Addr + ":" + strconv.Itoa(s.Port))
-		return tcpconn
+		fmt.Println("send test to " + s.Addr + ":" + strconv.Itoa(s.Port))
+		tcpconn.Write([]byte("send test"))
+		c <- &tcpconn
 	}
-	return tcpconn
+}
+
+//ConnectToServerRes connect to server response port to get response
+func ConnectToServerRes(s Peer, c chan *net.Conn) {
+	tcpaddr, err := net.ResolveTCPAddr("tcp", s.Addr+":"+strconv.Itoa(s.Portresponse))
+	tcpconn, err := net.DialTimeout("tcp", s.Addr+":"+strconv.Itoa(s.Portresponse), 2*time.Second)
+	fmt.Println("send TCP request to " + s.Addr + ":" + strconv.Itoa(s.Portresponse))
+	if err != nil {
+		fmt.Println("send TCP request failed, listen to " + s.Addr + ":" + strconv.Itoa(s.Portresponse))
+		tcplisten, err := net.ListenTCP("tcp", tcpaddr)
+		if err != nil {
+			fmt.Println("listen error")
+		}
+		tcpconn1, err := tcplisten.Accept()
+		if err != nil {
+			fmt.Println("accept error")
+		}
+		fmt.Println("connect to " + s.Addr + ":" + strconv.Itoa(s.Portresponse))
+		readinfo := make([]byte, 10)
+		tcpconn1.Read(readinfo)
+		fmt.Println("reveived:" + string(readinfo) + " from " + s.Addr + ":" + strconv.Itoa(s.Portresponse))
+		c <- &tcpconn1
+	} else {
+		fmt.Println("connect to " + s.Addr + ":" + strconv.Itoa(s.Portresponse))
+		fmt.Println("send response test to " + s.Addr + ":" + strconv.Itoa(s.Portresponse))
+		tcpconn.Write([]byte("response test"))
+		c <- &tcpconn
+
+	}
 }
