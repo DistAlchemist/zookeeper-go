@@ -16,7 +16,11 @@ type NetMessage struct {
 	//Type=2 ：vote for  info=nowVote
 	//Type=3 : i become winner, other ack
 	//Type=4 : node id collapsed, need to elect
+	//Type=5 : CREATE
+	//Type=6 : DELETE
+	//Type=7 : DIR
 	Info int
+	Str  string
 }
 
 //MessageFolder transalte message struct to byte
@@ -25,10 +29,22 @@ func MessageFolder(id int, typ int, info int) []byte {
 	return []byte(string1)
 }
 
+//MessageDataFolder transalte message struct to byte
+func MessageDataFolder(id int, typ int, info int, str string) []byte {
+	string1 := strconv.Itoa(id) + ":" + strconv.Itoa(typ) + ":" + strconv.Itoa(info) + ":" + str
+	return []byte(string1)
+}
+
 //SendMessage send message
 func SendMessage(c *net.Conn, Sid int, typ int, info int) {
 	fmt.Printf("send %d:%d:%d\n", Sid, typ, info)
 	(*c).Write(MessageFolder(Sid, typ, info))
+}
+
+//SendDataMessage send message
+func SendDataMessage(c *net.Conn, Sid int, typ int, info int, str string) {
+	fmt.Printf("send %d:%d:%d %s\n", Sid, typ, info, str)
+	(*c).Write(MessageDataFolder(Sid, typ, info, str))
 }
 
 //MessageDealer transalte message bytes to struct
@@ -41,6 +57,9 @@ func MessageDealer(bytes []byte) NetMessage {
 	newNetMessage.Id, err = strconv.Atoi(strings.Replace(stringsplit[0], ":", "", -1))
 	newNetMessage.Type, err = strconv.Atoi(strings.Replace(stringsplit[1], ":", "", -1))
 	newNetMessage.Info, err = strconv.Atoi(strings.Replace(stringsplit[2], ":", "", -1))
+	if newNetMessage.Type >= 5 {
+		newNetMessage.Str = strings.Replace(stringsplit[3], ":", "", -1)
+	}
 	if err != nil {
 		fmt.Println("MessageDealer Error")
 	}
@@ -54,7 +73,6 @@ func ResponseHandler(c *net.Conn, ch chan NetMessage, num int) {
 		n, err := (*c).Read(readinfo)
 		if err != nil {
 			fmt.Println("ResponseHandler Error " + string(readinfo[:n]))
-			fmt.Printf("peer: %d collapsed\n", num)
 			(*c).Close()
 			// when type=4 id is meaningless, only to tell that a node collapsed
 			var MessageProcessed NetMessage
@@ -63,7 +81,6 @@ func ResponseHandler(c *net.Conn, ch chan NetMessage, num int) {
 			MessageProcessed.Info = num
 			ch <- MessageProcessed
 			return
-
 		} else {
 			MessageProcessed := MessageDealer(readinfo[:n])
 			MessageProcessed.Id = num

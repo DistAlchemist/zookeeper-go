@@ -10,13 +10,13 @@ import (
 
 //ListenCount count down to listen to others
 func ListenCount(c chan int) {
-	time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	c <- 1
 }
 
 //ListenCountTally count down to elect oneself as leader
 func ListenCountTally(c chan int) {
-	time.Sleep(time.Duration(rand.Intn(3000)) * time.Millisecond)
+	time.Sleep(time.Duration(rand.Intn(1000)) * time.Millisecond)
 	c <- 1
 }
 
@@ -81,12 +81,12 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 					}
 					nowState = 3
 					return winner
-				} else {
+				} /*else {
 					//become follower
 					fmt.Println("i become follower")
 					nowState = 3
 					return winner
-				}
+				}*/
 			} else {
 				nowState = 1
 				fmt.Println("begin count down")

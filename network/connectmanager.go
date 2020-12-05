@@ -1,7 +1,6 @@
 package network
 
 import (
-	"fmt"
 	"net"
 )
 
@@ -13,5 +12,4 @@ func BeginConnect(cConn chan *net.Conn, cRes chan *net.Conn, Peerset []Peer) {
 	go ConnectToServerRes(Peerset[0], cRes)
 	go ConnectToServerRes(Peerset[1], cRes)
 
-	fmt.Println("all node is ready")
 }
