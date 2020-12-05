@@ -11,6 +11,7 @@ import (
 	"zookeepergo/quorum"
 )
 
+//Server used to be the server state, now only Sid works
 type Server struct {
 	Sid         int
 	CurrentVote int
@@ -105,6 +106,8 @@ func (server *Server) readcfg() []network.Peer {
 	return peerset
 
 }
+
+//Start is the entrance for server
 func (server Server) Start() {
 	fmt.Println("server begin")
 
@@ -123,14 +126,21 @@ func (server Server) Start() {
 		Response = append(Response, <-cRes)
 	}
 	fmt.Printf("%d %d\n", len(Conn), len(Response))
-
-	fmt.Println("start election")
-	quorum.LookForLeader(Peerset, server.Sid, Conn, Response)
-	//winner := quorum.LookForLeader(Peerset, server.Sid, Conn, Response)
-	/*if winner == server.Sid {
-		quorum.Leader()
-	} else {
-		quorum.Follower()
-	}*/
+	cR := make(chan network.NetMessage)
+	go network.ResponseHandler(Response[0], cR, 0)
+	go network.ResponseHandler(Response[1], cR, 1)
+	//cR is received message queue and Conn is sending socket
 	fmt.Println("load znode")
+	fmt.Println("start election")
+	//quorum.LookForLeader(Peerset, server.Sid, Conn, Response)
+	var winner int
+	for {
+		winner = quorum.LookForLeader(Peerset, server.Sid, Conn, Response, cR)
+		if winner == server.Sid {
+			quorum.Leader()
+		} else {
+			quorum.Follower(cR, Peerset, winner)
+		}
+	}
+
 }

@@ -15,6 +15,7 @@ type NetMessage struct {
 	//Type=1 : ask for vote info=xid
 	//Type=2 ：vote for  info=nowVote
 	//Type=3 : i become winner, other ack
+	//Type=4 : node id collapsed, need to elect
 	Info int
 }
 
@@ -55,6 +56,14 @@ func ResponseHandler(c *net.Conn, ch chan NetMessage, num int) {
 			fmt.Println("ResponseHandler Error " + string(readinfo[:n]))
 			fmt.Printf("peer: %d collapsed\n", num)
 			(*c).Close()
+			// when type=4 id is meaningless, only to tell that a node collapsed
+			var MessageProcessed NetMessage
+			MessageProcessed.Id = num
+			MessageProcessed.Type = 4
+			MessageProcessed.Info = num
+			ch <- MessageProcessed
+			return
+
 		} else {
 			MessageProcessed := MessageDealer(readinfo[:n])
 			MessageProcessed.Id = num

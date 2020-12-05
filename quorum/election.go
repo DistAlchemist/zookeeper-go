@@ -21,7 +21,7 @@ func ListenCountTally(c chan int) {
 }
 
 //LookForLeader either listen to other node or count to elect oneself
-func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response []*net.Conn) int {
+func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response []*net.Conn, cR chan network.NetMessage) int {
 	rand.Seed(int64(Sid) + time.Now().UnixNano())
 	xid := rand.Intn(100000)
 	//choose oneself as leader as initialization
@@ -29,11 +29,8 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 	var winner int
 	winner = -1
 	nowVote := Sid
-	cR := make(chan network.NetMessage)
 	cC := make(chan int)
 	cCt := make(chan int)
-	go network.ResponseHandler(Response[0], cR, 0)
-	go network.ResponseHandler(Response[1], cR, 1)
 	go ListenCount(cC)
 	//nowState=1 : listening to others
 	//nowState=2 : electing myself
@@ -58,7 +55,7 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 				tally[nowVote] = tally[nowVote] + 1
 				for i := 0; i < len(vote); i++ {
 					tally[vote[i]] = tally[vote[i]] + 1
-					fmt.Printf("*%d ", tally[vote[i]])
+					//fmt.Printf("*%d ", tally[vote[i]])
 				}
 				for i := 0; i < len(tally); i++ {
 					if tally[i] >= 2 {
