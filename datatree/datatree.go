@@ -75,7 +75,8 @@ func DeleteZnode(dir string, root *Datatree) {
 }
 
 //LookZnode shows all child of a direcory
-func LookZnode(dir string, root *Datatree) {
+func LookZnode(dir string, root *Datatree) string {
+	str := ""
 	dirq := SplitDir(dir)
 	now := root
 	for i := 0; i < len(dirq); i++ {
@@ -84,13 +85,16 @@ func LookZnode(dir string, root *Datatree) {
 			now = next
 		} else {
 			fmt.Println("dir not exist")
-			return
+			return str
 		}
 	}
+	fmt.Printf("dir now have: \n")
 	for v := range now.child {
-		fmt.Printf(v)
+		fmt.Printf(v + " ")
+		str = str + v + " "
 	}
 	fmt.Printf("\n")
+	return str
 }
 
 //CreateWatcher create a new znode on datatree

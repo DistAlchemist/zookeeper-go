@@ -9,7 +9,9 @@ import (
 //Follower perform operations a follower is supposed to do
 func Follower(cR chan network.NetMessage, Peerset []network.Peer, winner int) {
 	//load znode
-	root := datatree.NewZnode()
+	if root == nil {
+		root = datatree.NewZnode()
+	}
 	fmt.Println("load a new node")
 	//sync with leader
 

@@ -12,6 +12,8 @@ import (
 	"zookeepergo/network"
 )
 
+var root *datatree.Datatree
+
 func connecttoclient(clientset []network.Client, cP chan network.NetMessage) {
 	var ResponseCli []*net.Conn
 	cResCli := make(chan *net.Conn)
@@ -22,17 +24,50 @@ func connecttoclient(clientset []network.Client, cP chan network.NetMessage) {
 	go network.ResponseHandler(ResponseCli[0], cP, 0)
 }
 
+//Listentoclient only listen to connect and message of client port,clientport is set to 8007
+func Listentoclient(clientport int, cP chan network.NetMessage) {
+	tcpaddr, err := net.ResolveTCPAddr("tcp", "localhost:"+strconv.Itoa(clientport))
+	if err != nil {
+		fmt.Println("tcp resolve error")
+	}
+	tcplisten, err := net.ListenTCP("tcp", tcpaddr)
+	if err != nil {
+		fmt.Println("tcp listen error")
+	}
+	for {
+		fmt.Println("now listening to client port")
+		tcpconn1, err := tcplisten.Accept()
+		if err != nil {
+			fmt.Println("tcp accept error")
+		}
+		fmt.Println("listen to client port build")
+		readinfo := make([]byte, 30)
+		fmt.Println("begin read from client")
+		n, err := tcpconn1.Read(readinfo)
+		if err != nil {
+			fmt.Println("Client connection closed")
+			continue
+		}
+		fmt.Println("receive:")
+		cP <- network.MessageDealer(readinfo[:n])
+		tcpconn1.Close()
+	}
+}
+
 //Leader perform operations a leader is supposed to do
 func Leader(Conn []*net.Conn) {
-	//connect to client
-
+	cP := make(chan network.NetMessage)
+	/*//connect to client
 	fmt.Println("begin connect to client")
 	clientset := Readclientcfg()
-	cP := make(chan network.NetMessage)
-	connecttoclient(clientset, cP)
-
+	connecttoclient(clientset, cP)*/
+	fmt.Println("begin listen to client port")
+	go Listentoclient(8007, cP)
 	//load znode
-	root := datatree.NewZnode()
+	if root == nil {
+		root = datatree.NewZnode()
+	}
+
 	fmt.Println("load a new node")
 	//sync with follower
 
@@ -50,7 +85,8 @@ func Leader(Conn []*net.Conn) {
 				}
 			}
 			if Message.Type == 7 {
-				datatree.LookZnode(Message.Str, root)
+				str := datatree.LookZnode(Message.Str, root)
+				network.SendOnetimeMessage(Message.Info, Message.Id, Message.Type, Message.Info, str)
 				fmt.Printf("deal with message %d-%s\n", Message.Type, Message.Str)
 			}
 

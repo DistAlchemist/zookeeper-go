@@ -36,15 +36,22 @@ func (server Server) Start() {
 	fmt.Printf("read a total of %d peer\n", len(Peerset))
 
 	fmt.Println("initialize network")
+
 	var Conn []*net.Conn
 	var Response []*net.Conn
+	Conn = make([]*net.Conn, len(Peerset))
+	Response = make([]*net.Conn, len(Peerset))
 	cConn := make(chan *net.Conn)
 	cRes := make(chan *net.Conn)
-	network.BeginConnect(cConn, cRes, Peerset)
-	for i := 0; i < 2; i++ {
-		Conn = append(Conn, <-cConn)
-		Response = append(Response, <-cRes)
+	go network.BeginConnect(cConn, cRes, Peerset)
+	for i := 0; i < len(Peerset); i++ {
+		Conn[i] = <-cConn
+		Response[i] = <-cRes
 	}
+	/*_, err := (*Conn[0]).Write([]byte("1234135"))
+	if err != nil {
+		fmt.Println(err)
+	}*/
 	fmt.Println("all node is ready")
 	cR := make(chan network.NetMessage)
 	go network.ResponseHandler(Response[0], cR, 0)

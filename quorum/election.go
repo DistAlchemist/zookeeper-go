@@ -45,7 +45,7 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 				for i := 0; i < len(Conn); i++ {
 					network.SendMessage(Conn[i], Sid, 1, xid)
 				}
-				fmt.Println("begin tally")
+				fmt.Println("begin elect myself")
 				vote = []int{}
 				go ListenCountTally(cCt)
 			}

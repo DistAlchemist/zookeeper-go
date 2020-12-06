@@ -5,6 +5,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //NetMessage in the form of "Id:Type:Info"
@@ -35,13 +36,13 @@ func MessageDataFolder(id int, typ int, info int, str string) []byte {
 	return []byte(string1)
 }
 
-//SendMessage send message
+//SendMessage send message to elect leader
 func SendMessage(c *net.Conn, Sid int, typ int, info int) {
 	fmt.Printf("send %d:%d:%d\n", Sid, typ, info)
 	(*c).Write(MessageFolder(Sid, typ, info))
 }
 
-//SendDataMessage send message
+//SendDataMessage send message to follower
 func SendDataMessage(c *net.Conn, Sid int, typ int, info int, str string) {
 	fmt.Printf("send %d:%d:%d %s\n", Sid, typ, info, str)
 	(*c).Write(MessageDataFolder(Sid, typ, info, str))
@@ -88,4 +89,16 @@ func ResponseHandler(c *net.Conn, ch chan NetMessage, num int) {
 	}
 
 	//c.Read()
+}
+
+//SendOnetimeMessage send one time response message to client
+func SendOnetimeMessage(port int, Sid int, typ int, info int, str string) {
+	fmt.Printf("send %d:%d:%d %s to %d\n", Sid, typ, info, str, port)
+	tcpconn, err := net.DialTimeout("tcp", "localhost:"+strconv.Itoa(port), 2*time.Second)
+	if err != nil {
+		fmt.Println("send client response error ", err)
+	}
+	SendDataMessage(&tcpconn, Sid, typ, info, str)
+	tcpconn.Close()
+
 }
