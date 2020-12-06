@@ -20,6 +20,7 @@ type NetMessage struct {
 	//Type=5 : CREATE
 	//Type=6 : DELETE
 	//Type=7 : DIR
+	//Type=8 : WATCH
 	Info int
 	Str  string
 }
@@ -97,8 +98,9 @@ func SendOnetimeMessage(port int, Sid int, typ int, info int, str string) {
 	tcpconn, err := net.DialTimeout("tcp", "localhost:"+strconv.Itoa(port), 2*time.Second)
 	if err != nil {
 		fmt.Println("send client response error ", err)
+	} else {
+		SendDataMessage(&tcpconn, Sid, typ, info, str)
+		tcpconn.Close()
 	}
-	SendDataMessage(&tcpconn, Sid, typ, info, str)
-	tcpconn.Close()
 
 }

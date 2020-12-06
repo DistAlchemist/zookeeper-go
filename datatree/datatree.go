@@ -2,8 +2,8 @@ package datatree
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
-	"zookeepergo/network"
 )
 
 //Datatree a structure for manage data
@@ -32,17 +32,27 @@ func SplitDir(dir string) []string {
 }
 
 //CreateZnode create a new znode on datatree
-func CreateZnode(dir string, root *Datatree) {
+func CreateZnode(dir string, root *Datatree, event *string) {
 	dirq := SplitDir(dir)
 	now := root
 	for i := 0; i < len(dirq)-1; i++ {
 		next, exist := (*now).child[dirq[i]]
 		if exist {
+			if now.watcher != -1 {
+				fmt.Println("watcher triggered by:" + dir)
+				*event = strconv.Itoa(now.watcher) + ":CREATE:" + dir
+				now.watcher = -1
+			}
 			now = next
 		} else {
 			fmt.Println("dir not exist")
 			return
 		}
+	}
+	if now.watcher != -1 {
+		fmt.Println("watcher triggered by:" + dir)
+		*event = strconv.Itoa(now.watcher) + ":CREATE:" + dir
+		now.watcher = -1
 	}
 	next, exist := (*now).child[dirq[len(dirq)-1]]
 	if exist {
@@ -57,17 +67,27 @@ func CreateZnode(dir string, root *Datatree) {
 }
 
 //DeleteZnode delete a new znode on datatree
-func DeleteZnode(dir string, root *Datatree) {
+func DeleteZnode(dir string, root *Datatree, event *string) {
 	dirq := SplitDir(dir)
 	now := root
 	for i := 0; i < len(dirq); i++ {
 		next, exist := (*now).child[dirq[i]]
 		if exist {
+			if now.watcher != -1 {
+				fmt.Println("watcher triggered by:" + dir)
+				*event = strconv.Itoa(now.watcher) + ":DELETE:" + dir
+				now.watcher = -1
+			}
 			now = next
 		} else {
 			fmt.Println("dir not exist")
 			return
 		}
+	}
+	if now.watcher != -1 {
+		fmt.Println("watcher triggered by:" + dir)
+		*event = strconv.Itoa(now.watcher) + ":DELETE:" + dir
+		now.watcher = -1
 	}
 	(*now).father = nil
 	now = nil
@@ -98,7 +118,7 @@ func LookZnode(dir string, root *Datatree) string {
 }
 
 //CreateWatcher create a new znode on datatree
-func CreateWatcher(dir string, root *Datatree, clientid int) {
+func CreateWatcher(dir string, root *Datatree, port int) {
 	dirq := SplitDir(dir)
 	now := root
 	for i := 0; i < len(dirq); i++ {
@@ -110,15 +130,6 @@ func CreateWatcher(dir string, root *Datatree, clientid int) {
 			return
 		}
 	}
-	(*now).watcher = clientid
-}
-
-//DealWithMessage deal with message about create or delete
-func DealWithMessage(Message network.NetMessage, root *Datatree) {
-	if Message.Type == 5 {
-		CreateZnode(Message.Str, root)
-	}
-	if Message.Type == 6 {
-		DeleteZnode(Message.Str, root)
-	}
+	(*now).watcher = port
+	fmt.Println("create a watch on" + dir + ":" + strconv.Itoa(port) + " successfully")
 }
