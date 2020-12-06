@@ -1,14 +1,18 @@
 package client
 
 import (
+	"bufio"
 	"fmt"
 	"net"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 	"zookeepergo/network"
 )
 
-const responseport = 8008
+//Responseport response port of this client
+var Responseport int
 
 func createsendsocket() *net.Conn {
 	tcpconn, err := net.DialTimeout("tcp", "localhost:8007", 2*time.Second)
@@ -23,7 +27,23 @@ var tcplisten net.Listener
 
 //Start of client
 func Start() {
-	tcplisten, _ = net.Listen("tcp", "localhost:"+strconv.Itoa(responseport))
+	var byte []byte
+	fp, err := os.Open("clientport.cfg")
+	if err != nil {
+		fmt.Println("open failed", err)
+	}
+	r := bufio.NewReader(fp)
+	//read sid
+	byte, err = r.ReadBytes('\n')
+	if err != nil {
+		fmt.Println("read failed", err)
+	}
+	slice := string(byte)
+	slice = strings.Replace(slice, "\n", "", -1)
+	slice = strings.Replace(slice, "\r", "", -1)
+	Responseport, _ = strconv.Atoi(slice)
+	fmt.Printf("clientport:%d\n", Responseport)
+	tcplisten, _ = net.Listen("tcp", "localhost:"+strconv.Itoa(Responseport))
 	for {
 
 		var strinput1, strinput2 string

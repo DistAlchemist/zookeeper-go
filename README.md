@@ -25,6 +25,14 @@ see https://github.com/DistAlchemist/Mongongo Getting Started
    WATCH <dir> <port>   ——set a watcher on a dir, response will be on <port>
 ```
 
+TODO：
+
+* add replication log and view
+* add reconnect and resync based on log
+* send error back to client
+* persistent Znode
+* ACK
+
 ## Example
 
 You need to copy this project several times and change the zoo.cfg and const responseport in cmd/client/main.go to set address and port.

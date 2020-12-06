@@ -21,7 +21,7 @@ func Delete(strinput2 string, tc net.Conn) {
 
 //Dir return dir string
 func Dir(strinput2 string, tc net.Conn) string {
-	network.SendDataMessage(&tc, 4, 7, responseport, strinput2)
+	network.SendDataMessage(&tc, 4, 7, Responseport, strinput2)
 	time.Sleep(100 * time.Millisecond)
 	tcpconn1, err := tcplisten.Accept()
 	if err != nil {
@@ -36,6 +36,7 @@ func Dir(strinput2 string, tc net.Conn) string {
 	return network.MessageDealer(readinfo[:n]).Str
 }
 
+//Watch create watch and send watchedevent to dest if exist
 func Watch(strinput2 string, tc net.Conn, watcherport int, dest *string) {
 	network.SendDataMessage(&tc, 4, 8, watcherport, strinput2)
 	go ListentoWatcherport(watcherport, dest)
