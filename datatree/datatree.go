@@ -89,6 +89,7 @@ func DeleteZnode(dir string, root *Datatree, event *string) {
 		*event = strconv.Itoa(now.watcher) + ":DELETE:" + dir
 		now.watcher = -1
 	}
+	delete((*now).father.child, dirq[len(dirq)-1])
 	(*now).father = nil
 	now = nil
 
