@@ -26,9 +26,8 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 	xid := rand.Intn(100000)
 	//choose oneself as leader as initialization
 	var vote []int
-	var winner int
-	winner = -1
-	nowVote := Sid
+	network.Winner = -1
+	nowVote := -1
 	cC := make(chan int)
 	cCt := make(chan int)
 	go ListenCount(cC)
@@ -60,27 +59,27 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 				for i := 0; i < len(tally); i++ {
 					if tally[i] >= 2 {
 						nowVote = i
-						winner = i
+						network.Winner = i
 					}
 					fmt.Printf("%d：%d ", i, tally[i])
 				}
 				fmt.Printf("\n")
-				if winner == -1 {
+				if network.Winner == -1 {
 					fmt.Printf("still looking for winner\n")
 					nowState = 1
 					fmt.Println("begin count down")
 					go ListenCount(cC)
 					continue
 				}
-				fmt.Printf("winner is %d\n", winner)
-				if winner == Sid {
+				fmt.Printf("winner is %d\n", network.Winner)
+				if network.Winner == Sid {
 					//become leader
 					fmt.Println("i become leader")
 					for i := 0; i < len(Conn); i++ {
 						network.SendMessage(Conn[i], Sid, 3, Sid)
 					}
 					nowState = 3
-					return winner
+					return network.Winner
 				} /*else {
 					//become follower
 					fmt.Println("i become follower")
@@ -90,20 +89,23 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 			} else {
 				nowState = 1
 				fmt.Println("begin count down")
+				nowVote = -1
 				go ListenCount(cC)
 			}
 		case Message := <-cR:
 			if Message.Type == 1 {
 				if nowState == 1 {
-					nowVote = Peerset[Message.Id].Sid //translate from relative id to absolute id
+					if nowVote == -1 {
+						nowVote = Peerset[Message.Id].Sid //translate from relative id to absolute id
+					}
 					fmt.Printf("vote for %d\n", nowVote)
 					network.SendMessage(Conn[Message.Id], Sid, 2, nowVote)
 				} else if nowState == 2 {
 					fmt.Printf("vote for %d\n", nowVote)
 					network.SendMessage(Conn[Message.Id], Sid, 2, nowVote)
 				} else if nowState == 3 {
-					fmt.Printf("vote for %d\n", winner)
-					network.SendMessage(Conn[Message.Id], Sid, 2, winner)
+					fmt.Printf("vote for %d\n", network.Winner)
+					network.SendMessage(Conn[Message.Id], Sid, 2, network.Winner)
 				}
 			} else if Message.Type == 2 {
 				if nowState == 2 {
@@ -113,9 +115,9 @@ func LookForLeader(Peerset []network.Peer, Sid int, Conn []*net.Conn, Response [
 			} else if Message.Type == 3 {
 				nowState = 3
 				nowVote = Message.Info
-				winner = Message.Info
+				network.Winner = Message.Info
 				fmt.Println("i become follower")
-				return winner
+				return network.Winner
 			}
 		}
 	}

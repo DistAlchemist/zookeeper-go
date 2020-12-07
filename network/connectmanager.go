@@ -13,10 +13,10 @@ func BeginConnect(cConn chan *net.Conn, cRes chan *net.Conn, Peerset []Peer) {
 	cC1 := make(chan *net.Conn)
 	cR0 := make(chan *net.Conn)
 	cR1 := make(chan *net.Conn)
-	go ConnectToServer(Peerset[0], cC0, c)
-	go ConnectToServer(Peerset[1], cC1, c)
-	go ConnectToServerRes(Peerset[0], cR0, c)
-	go ConnectToServerRes(Peerset[1], cR1, c)
+	go ConnectToServer(0, cC0, c)
+	go ConnectToServer(1, cC1, c)
+	go ConnectToServerRes(0, cR0, c)
+	go ConnectToServerRes(1, cR1, c)
 	//wait until all nodes ready, this is a feature that assume all nodes must work well when starting
 	Conn1[0] = <-cC0
 	Conn1[1] = <-cC1

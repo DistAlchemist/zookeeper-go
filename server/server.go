@@ -32,41 +32,43 @@ func (server Server) Start() {
 	fmt.Println("server begin")
 
 	fmt.Println("load zoo.cfg")
-	Peerset := server.readcfg()
-	fmt.Printf("read a total of %d peer\n", len(Peerset))
+	network.Peerset = server.readcfg()
+	fmt.Printf("read a total of %d peer\n", len(network.Peerset))
 
 	fmt.Println("initialize network")
 
-	var Conn []*net.Conn
-	var Response []*net.Conn
-	Conn = make([]*net.Conn, len(Peerset))
-	Response = make([]*net.Conn, len(Peerset))
+	network.Conn = make([]*net.Conn, len(network.Peerset))
+	network.Response = make([]*net.Conn, len(network.Peerset))
+	network.Ctcplistener = make([]*net.TCPListener, len(network.Peerset))
+	network.Rtcplistener = make([]*net.TCPListener, len(network.Peerset))
 	cConn := make(chan *net.Conn)
 	cRes := make(chan *net.Conn)
-	go network.BeginConnect(cConn, cRes, Peerset)
-	for i := 0; i < len(Peerset); i++ {
-		Conn[i] = <-cConn
-		Response[i] = <-cRes
+	go network.BeginConnect(cConn, cRes, network.Peerset)
+	for i := 0; i < len(network.Peerset); i++ {
+		network.Conn[i] = <-cConn
+		network.Response[i] = <-cRes
 	}
 	/*_, err := (*Conn[0]).Write([]byte("1234135"))
 	if err != nil {
 		fmt.Println(err)
 	}*/
 	fmt.Println("all node is ready")
-	cR := make(chan network.NetMessage)
-	go network.ResponseHandler(Response[0], cR, 0)
-	go network.ResponseHandler(Response[1], cR, 1)
+	network.CR = make(chan network.NetMessage)
+	go network.ResponseHandler(network.Response[0], network.CR, 0)
+	go network.ResponseHandler(network.Response[1], network.CR, 1)
 	//cR is received message queue and Conn is sending socket
 	fmt.Println("load znode")
 	fmt.Println("start election")
 	//quorum.LookForLeader(Peerset, server.Sid, Conn, Response)
-	var winner int
+	network.Winner = -1
 	for {
-		winner = quorum.LookForLeader(Peerset, server.Sid, Conn, Response, cR)
-		if winner == server.Sid {
-			quorum.Leader(Conn)
+		if network.Winner == -1 {
+			network.Winner = quorum.LookForLeader(network.Peerset, server.Sid, network.Conn, network.Response, network.CR)
+		}
+		if network.Winner == server.Sid {
+			quorum.Leader(network.Conn)
 		} else {
-			quorum.Follower(cR, Peerset, winner)
+			quorum.Follower(network.CR, network.Peerset, network.Winner)
 		}
 	}
 

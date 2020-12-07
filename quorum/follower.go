@@ -20,8 +20,11 @@ func Follower(cR chan network.NetMessage, Peerset []network.Peer, winner int) {
 		select {
 		case Message := <-cR:
 			fmt.Printf("peer: %d relative id,winner is %d\n", Message.Info, winner)
-			if Message.Type == 4 && Peerset[Message.Info].Sid == winner {
-				fmt.Printf("peer: %d collapsed,winner is %d\n", Peerset[Message.Info].Sid, winner)
+			if Message.Type == 4 {
+				if Peerset[Message.Info].Sid == winner {
+					fmt.Printf("peer: %d collapsed,winner is %d\n", Peerset[Message.Info].Sid, winner)
+					network.Winner = -1
+				}
 				return
 			}
 			if Message.Type >= 5 {

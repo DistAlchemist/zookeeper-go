@@ -89,8 +89,16 @@ func Leader(Conn []*net.Conn) {
 				network.SendOnetimeMessage(Message.Info, Message.Id, Message.Type, Message.Info, str)
 				fmt.Printf("deal with message %d-%s\n", Message.Type, Message.Str)
 			}
-
+		case Message := <-network.CR:
+			if Message.Type <= 3 {
+				fmt.Printf("deal with message %d-%s\n", Message.Type, Message.Str)
+				for i := 0; i < len(Conn); i++ {
+					network.SendMessage(Conn[i], network.Winner, 3, network.Winner)
+					time.Sleep(50 * time.Millisecond)
+				}
+			}
 		}
+
 	}
 
 }

@@ -25,6 +25,9 @@ type NetMessage struct {
 	Str  string
 }
 
+//CR global message queue
+var CR chan NetMessage
+
 //MessageFolder transalte message struct to byte
 func MessageFolder(id int, typ int, info int) []byte {
 	string1 := strconv.Itoa(id) + ":" + strconv.Itoa(typ) + ":" + strconv.Itoa(info)
@@ -82,6 +85,7 @@ func ResponseHandler(c *net.Conn, ch chan NetMessage, num int) {
 			MessageProcessed.Type = 4
 			MessageProcessed.Info = num
 			ch <- MessageProcessed
+			Relisten(Peerset[num], num)
 			return
 		}
 		MessageProcessed := MessageDealer(readinfo[:n])

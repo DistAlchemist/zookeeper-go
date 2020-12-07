@@ -7,3 +7,6 @@ type Peer struct {
 	Port         int
 	Portresponse int
 }
+
+var Peerset []Peer
+var Winner int
