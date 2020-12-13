@@ -10,6 +10,7 @@ import (
 	"time"
 	"zookeepergo/datatree"
 	"zookeepergo/network"
+	"zookeepergo/replicalog"
 )
 
 var root *datatree.Datatree
@@ -96,6 +97,18 @@ func Leader(Conn []*net.Conn) {
 					network.SendMessage(Conn[i], network.Winner, 3, network.Winner)
 					time.Sleep(50 * time.Millisecond)
 				}
+			}
+			if Message.Type == 9 {
+				fmt.Printf("deal with message %d-%s\n", Message.Type, Message.Str)
+				for j := 0; j < 2; j++ {
+					if network.Peerset[j].Sid == Message.Id {
+						for i := Message.Info + 1; i <= replicalog.Lognum; i++ {
+							network.SendDataMessage(Conn[j], network.Winner, replicalog.Getlog(i).Action, replicalog.Getlog(i).Info, replicalog.Getlog(i).Str)
+							time.Sleep(50 * time.Millisecond)
+						}
+					}
+				}
+
 			}
 		}
 

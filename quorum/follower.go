@@ -4,16 +4,23 @@ import (
 	"fmt"
 	"zookeepergo/datatree"
 	"zookeepergo/network"
+	"zookeepergo/replicalog"
 )
 
 //Follower perform operations a follower is supposed to do
-func Follower(cR chan network.NetMessage, Peerset []network.Peer, winner int) {
+func Follower(cR chan network.NetMessage, Peerset []network.Peer, winner int, Sid int) {
 	//load znode
 	if root == nil {
 		root = datatree.NewZnode()
 	}
 	fmt.Println("load a new node")
 	//sync with leader
+	for i := 0; i < 2; i++ {
+		if Peerset[i].Sid == network.Winner {
+			network.SendMessage(network.Conn[i], Sid, 9, replicalog.Lognow)
+			fmt.Printf("sending sync information to %d\n", Peerset[i].Sid)
+		}
+	}
 
 	//deal with message by select
 	for {

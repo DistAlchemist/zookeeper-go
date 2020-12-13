@@ -6,6 +6,7 @@ import (
 	"strings"
 	"zookeepergo/network"
 	"zookeepergo/quorum"
+	"zookeepergo/replicalog"
 )
 
 //Server used to be the server state, now only Sid works
@@ -58,6 +59,7 @@ func (server Server) Start() {
 	go network.ResponseHandler(network.Response[1], network.CR, 1)
 	//cR is received message queue and Conn is sending socket
 	fmt.Println("load znode")
+	replicalog.Initlog()
 	fmt.Println("start election")
 	//quorum.LookForLeader(Peerset, server.Sid, Conn, Response)
 	network.Winner = -1
@@ -68,7 +70,7 @@ func (server Server) Start() {
 		if network.Winner == server.Sid {
 			quorum.Leader(network.Conn)
 		} else {
-			quorum.Follower(network.CR, network.Peerset, network.Winner)
+			quorum.Follower(network.CR, network.Peerset, network.Winner, server.Sid)
 		}
 	}
 

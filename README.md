@@ -1,10 +1,12 @@
-# zookeeper-go
+# Zookeeper-Go
 
-A simple zookeeper in Go
+A simple Zookeeper in Go
+
+This is a part of the final project of Big Data System Foundation(B) in Autumn, 2020 by Group 2
 
 ## Getting Started
 
-see https://github.com/DistAlchemist/Mongongo Getting Started
+See https://github.com/DistAlchemist/Mongongo Getting Started
 
 ## Design
 
@@ -14,7 +16,7 @@ see https://github.com/DistAlchemist/Mongongo Getting Started
    * Quorum
    * Znode
    
-* For Quorum, the base election algorithm is a raft-like election except ACK. Proposals are broadcasted but not need ACK as well. It can tolerate up to n failure nodes in a total of 2n+1 nodes.
+* For Quorum, the base election algorithm is a raft-like election except ACK. Proposals are broadcasted but not need ACK as well. It can tolerate up to n failure nodes in a total of 2n+1 nodes. Reconnect and synchronization is supported. System reaches high availability and consistency.
 
 * Znode support following operations:
 
@@ -27,17 +29,16 @@ see https://github.com/DistAlchemist/Mongongo Getting Started
 
 TODO：
 
-* add replication log and view
-* add reconnect and resync based on log
-* send error back to client
-* persistent Znode
+* Send error back to client
+* Persistent Znode
 * ACK
+* Add view and other consensus algorithm
 
 ## Example
 
-You need to copy this project several times and change the zoo.cfg and const responseport in cmd/client/main.go to set address and port.
+You need to copy this project several times and change the settings in zoo.cfg and client.cfg to set address and port correctly.
 
-Test contains a basic example of this project.
+Local-test.zip contains a basic example of this project that has been set correctly
 
 By running:
 

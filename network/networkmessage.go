@@ -21,6 +21,7 @@ type NetMessage struct {
 	//Type=6 : DELETE
 	//Type=7 : DIR
 	//Type=8 : WATCH
+	//Type=9 : SYNC NUM  follower ask for leader sync
 	Info int
 	Str  string
 }
@@ -55,14 +56,14 @@ func SendDataMessage(c *net.Conn, Sid int, typ int, info int, str string) {
 //MessageDealer transalte message bytes to struct
 func MessageDealer(bytes []byte) NetMessage {
 	string1 := string(bytes)
-	fmt.Println("receive: " + string1)
+	//fmt.Println("receive: " + string1)
 	stringsplit := strings.Split(string1, ":")
 	var newNetMessage NetMessage
 	var err error
 	newNetMessage.Id, err = strconv.Atoi(strings.Replace(stringsplit[0], ":", "", -1))
 	newNetMessage.Type, err = strconv.Atoi(strings.Replace(stringsplit[1], ":", "", -1))
 	newNetMessage.Info, err = strconv.Atoi(strings.Replace(stringsplit[2], ":", "", -1))
-	if newNetMessage.Type >= 5 {
+	if newNetMessage.Type >= 5 && newNetMessage.Type <= 8 {
 		newNetMessage.Str = strings.Replace(stringsplit[3], ":", "", -1)
 	}
 	if err != nil {

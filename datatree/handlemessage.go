@@ -4,10 +4,12 @@ import (
 	"strconv"
 	"strings"
 	"zookeepergo/network"
+	"zookeepergo/replicalog"
 )
 
 //DealWithMessage deal with message about create or delete
 func DealWithMessage(Message network.NetMessage, root *Datatree) {
+	replicalog.Recordlog(Message.Type, Message.Info, Message.Str)
 	str1 := ""
 	if Message.Type == 5 {
 		CreateZnode(Message.Str, root, &str1)
